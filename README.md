@@ -24,7 +24,7 @@ $.ajax ({
             CompilerArgs : @2}
     }).done(function(data) {
         if (data.Errors == null) {
-            send.lia("eval", data.Result+"\n-------------------\n"+data.Stats);
+            send.lia("eval", data.Result+"\n-------------------\n"+data.Stats.replace(/, /g, ",\n"));
         } else {
             send.lia("log", data.Errors, [], false);
             send.lia("eval", "LIA: stop");
@@ -45,6 +45,26 @@ $.ajax ({
 -->
 
 # C-Programmierung
+
+Dies ist eine Portierung des Wikibuches
+[C-Programmierung](https://de.wikibooks.org/wiki/C-Programmierung) nach
+[LiaScript](https://LiaScript.github.io), eine erweiterte Markdown-Notation für
+zur Erstellung von freien online-Kursen. Aber warum sollte man sowas tun? Ein
+freies Buch in ein anderes freies Format zu übersetzen ...
+
+
+Die Antwort ist ganz einfach, jeder kann diesen Kurs forken und verändern und
+seine eigene Version davon erstellen und das coolste ist ... viele der Beispiele
+können im Browser ausgeführt und verändert werden. Siehe hier:
+
+https://liascript.github.io/course/?https://raw.githubusercontent.com/andre-dietrich/C-Programmierung/master/README.md
+
+Um die Beispielprogramme in diesem Buch ausführbar zu gestalten, wird auf die
+kostenlose und nicht kommerzielle API von https://rextester.com zurückgegriffen.
+
+Wenn jemand dieses Projekt gut findet, dann kann er hier dafür spenden:
+
+https://rextester.com/main
 
 ## Vorwort
 
