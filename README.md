@@ -7,90 +7,41 @@ language: de
 
 narrator: Deutsch Female
 
-@run_main
+script:   https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js
+
+@eval
 <script>
-events.register("@0", e => {
-		if (!e.exit)
-    		send.lia("output", e.stdout);
-		else
-    		send.lia("eval",  "LIA: stop");
-});
+//var result = null;
+var error  = false;
 
-send.handle("input", (e) => {send.service("@0",  {input: e})});
-send.handle("stop",  (e) => {send.service("@0",  {stop: ""})});
+$.ajax ({
+    url: "https://rextester.com/rundotnet/api",
+    type: "POST",
 
+    data: { LanguageChoice: @0,
+            Program: `@input`,
+            Input: `@1`,
+            CompilerArgs : @2}
+    }).done(function(data) {
+        if (data.Errors == null) {
+            send.lia("eval", data.Result+"\n-------------------\n"+data.Stats);
+        } else {
+            send.lia("log", data.Errors, [], false);
+            send.lia("eval", "LIA: stop");
+        }
+    }).fail(function(data, err) {
+        send.lia("log", data.Errors, [], false);
+        send.lia("eval", "LIA: stop");
+    });
 
-send.service("@0", {start: "CodeRunner", settings: null})
-.receive("ok", e => {
-		send.lia("output", e.message);
-
-		send.service("@0", {files: {"main.c": `@input`}})
-		.receive("ok", e => {
-				send.lia("output", e.message);
-
-				send.service("@0",  {compile: "gcc main.c -o a.out", order: ["main.c"]})
-				.receive("ok", e => {
-						send.lia("log", e.message, e.details, true);
-
-						send.service("@0",  {execute: "./a.out"})
-						.receive("ok", e => {
-								send.lia("output", e.message);
-								send.lia("eval", "LIA: terminal", [], false);
-						})
-						.receive("error", e => { send.lia("log", e.message, e.details, false); send.lia("eval", "LIA: stop"); });
-				})
-				.receive("error", e => { send.lia("log", e.message, e.details, false); send.lia("eval", "LIA: stop"); });
-		})
-		.receive("error", e => { send.lia("output", e.message); send.lia("eval", "LIA: stop"); });
-})
-.receive("error", e => { send.lia("output", e.message); send.lia("eval", "LIA: stop"); });
-
-"LIA: wait";
-</script>
-
-@end
-
-@compile_and_run
-<script>
-events.register("@0", e => {
-		if (!e.exit)
-    		send.lia("output", e.stdout);
-		else
-    		send.lia("eval",  "LIA: stop");
-});
-
-send.handle("input", (e) => {send.service("@0",  {input: e})});
-send.handle("stop",  (e) => {send.service("@0",  {stop: ""})});
-
-
-send.service("@0", {start: "CodeRunner", settings: null})
-.receive("ok", e => {
-		send.lia("output", e.message);
-
-		send.service("@0", {files: @4})
-		.receive("ok", e => {
-				send.lia("output", e.message);
-
-				send.service("@0",  {compile: @1, order: [@2]})
-				.receive("ok", e => {
-						send.lia("log", e.message, e.details, true);
-
-						send.service("@0",  {execute: @3})
-						.receive("ok", e => {
-								send.lia("output", e.message);
-								send.lia("eval", "LIA: terminal", [], false);
-						})
-						.receive("error", e => { send.lia("log", e.message, e.details, false); send.lia("eval", "LIA: stop"); });
-				})
-				.receive("error", e => { send.lia("log", e.message, e.details, false); send.lia("eval", "LIA: stop"); });
-		})
-		.receive("error", e => { send.lia("output", e.message); send.lia("eval", "LIA: stop"); });
-})
-.receive("error", e => { send.lia("output", e.message); send.lia("eval", "LIA: stop"); });
-
-"LIA: wait";
+"LIA: wait"
 </script>
 @end
+
+@run: @eval(6, ,"-Wall -std=gnu99 -O2 -o a.out source_file.c")
+
+@run_stdin: @eval(6,`@input(1)`,"-Wall -std=gnu99 -O2 -o a.out source_file.c")
+
 -->
 
 # C-Programmierung
@@ -165,7 +116,7 @@ int main()
         return EXIT_SUCCESS;
 }
 ```
-@run_main(formatierung)
+@run
 
 Bitte beachten Sie, dass die Zeilennummern nicht zum Programm dazugehören,
 sondern lediglich zur einfacheren Programmbesprechung dienen. Momentan gibt es
@@ -417,7 +368,7 @@ int main()
   return 0;
 }
 ```
-@compile_and_run(helloWorld, "gcc -Wall main.c -o a.out",`"main.c"`, "./a.out",```{"main.c": `@input`}```)
+@run
 
 
 Dieses einfache Programm dient aber auch dazu, Sie mit der Compilerumgebung
@@ -496,7 +447,7 @@ int main()
   return 0;
 }
 ```
-@run_main(rechnen_in_c)
+@run
 
 Zunächst aber zur Erklärung des Programms: In Zeile 5 berechnet das Programm den
 Ausdruck `3 + 2 * 8`. Da C die Punkt-vor-Strich-Regel beachtet, ist die Ausgabe
@@ -609,7 +560,7 @@ int main()
 
 }
 ```
-@run_main(kommentare)
+@run
 
 > Hinweis: Tipps zum sinnvollen Einsatz von Kommentaren finden Sie im Kapitel
 > Programmierstil. Um die Lesbarkeit zu verbessern, wird in diesem Wikibook
@@ -664,18 +615,23 @@ int main(void)
   return 0;
 }
 ```
-@run_main(quader)
+``` bash stdin
+2
+3
+4
+```
+@run_stdin
 
 * Bevor eine Variable in C benutzt werden kann, muss sie definiert werden (Zeile
   5). Das bedeutet, Bezeichner (Name der Variable) und (Daten-)Typ (hier `int`)
   müssen vom Programmierer festgelegt werden, dann kann der Computer
   entsprechenden Speicherplatz vergeben und die Variable auch adressieren (siehe
-  später: C-Programmierung: Zeiger). Im Beispielprogramm werden die Variablen `a`,
-  `b`, und `c` als Integer (Ganzzahl) definiert.
+  später: C-Programmierung: Zeiger). Im Beispielprogramm werden die Variablen
+  `a`, `b`, und `c` als Integer (Ganzzahl) definiert.
 
 * Mit der Bibliotheksfunktion `scanf` können wir einen Wert von der Tastatur
-  einlesen und in einer Variable speichern (mehr zur Anweisung `scanf` im nächsten
-  Kapitel).
+  einlesen und in einer Variable speichern (mehr zur Anweisung `scanf` im
+  nächsten Kapitel).
 
 * Dieses Programm enthält keinen Code zur Fehlererkennung; d. h., wenn man hier
   statt der ganzen Zahlen etwas anderes oder auch gar nichts eingibt, passieren
@@ -792,19 +748,20 @@ woran sich auch dieses Wikibuch hält.
 
 Für vom Programmierer vereinbarte Bezeichner gelten außerdem folgende Regeln:
 
-* Sie müssen mit einem Buchstaben oder einem Unterstrich beginnen; falsch wäre z.
-  B. 1_Breite .
+* Sie müssen mit einem Buchstaben oder einem Unterstrich beginnen; falsch wäre
+  z. B. 1_Breite .
 
-* Sie dürfen nur Buchstaben des englischen Alphabets (also keine Umlaute oder 'ß'),
-  Zahlen und den Unterstrich enthalten.
+* Sie dürfen nur Buchstaben des englischen Alphabets (also keine Umlaute oder
+  'ß'), Zahlen und den Unterstrich enthalten.
 
-* Sie dürfen nicht einem C-Schlüsselwort wie z. B. `int` oder `extern` entsprechen.
+* Sie dürfen nicht einem C-Schlüsselwort wie z. B. `int` oder `extern`
+  entsprechen.
 
 Nachdem eine Variable definiert wurde, hat sie keinen bestimmten Wert (außer bei
-globalen Variablen oder Variablen mit Speicherklasse static), sondern besitzt
+globalen Variablen oder Variablen mit Speicherklasse `static`), sondern besitzt
 lediglich den Inhalt, der sich zufällig in der Speicherzelle befunden hat (auch
 als "Speichermüll" bezeichnet). Einen Wert erhält sie erst, wenn dieser ihr
-zugewiesen wird, z. B: mit der Eingabeanweisung scanf. Man kann der Variablen
+zugewiesen wird, z. B: mit der Eingabeanweisung `scanf`. Man kann der Variablen
 auch direkt einen Wert zuweisen. Beispiel:
 
 ``` cpp
@@ -849,13 +806,9 @@ Ganzzahlen:
 
 * `char` (character): 1 Byte [^1] bzw. 1 Zeichen (kann zur Darstellung von
   Ganzzahlen oder Zeichen genutzt werden)
-
 * `short int` (integer): ganzzahliger Wert
-
 * `int` (integer): ganzzahliger Wert
-
 * `long int` (integer): ganzzahliger Wert
-
 * `long long int` (integer): ganzzahliger Wert, ab C99
 
 Ist ein Typ-Spezifizierer (long oder short) vorhanden, ist die `int` Typangabe
@@ -883,8 +836,8 @@ unsigned short int a;
 ```
 
 eine vorzeichenlose Variable des Typs `unsigned short int` definiert. Der Typ
-`signed short int` liefert Werte von mindestens -32.768 bis 32.767. Variablen des
-Typs `unsigned short int` können nur nicht-negative Werte speichern. Der
+`signed short int` liefert Werte von mindestens -32.768 bis 32.767. Variablen
+des Typs `unsigned short int` können nur nicht-negative Werte speichern. Der
 Wertebereich wird natürlich nicht größer, vielmehr verschiebt er sich und liegt
 im Bereich von 0 bis 65.535. [^2]
 
@@ -904,17 +857,17 @@ signed int a;
 
 Leider ist die Vorzeichenregel beim Datentyp `char` etwas komplizierter:
 
-* Wird `char` dazu verwendet einen numerischen Wert zu speichern und die Variable
-  nicht explizit als vorzeichenbehaftet oder vorzeichenlos vereinbart, dann ist es
-  implementierungsabhängig, ob `char` vorzeichenbehaftet ist oder nicht.
-
+* Wird `char` dazu verwendet einen numerischen Wert zu speichern und die
+  Variable nicht explizit als vorzeichenbehaftet oder vorzeichenlos vereinbart,
+  dann ist es implementierungsabhängig, ob `char` vorzeichenbehaftet ist oder
+  nicht.
 * Wenn ein Zeichen gespeichert wird, so garantiert der Standard, dass der
   gespeicherte Wert der nichtnegativen Codierung im Zeichensatz entspricht.
 
 Was versteht man unter dem letzten Punkt? Ein Zeichensatz hat die Aufgabe, einem
 Zeichen einen bestimmten Wert zuzuordnen, da der Rechner selbst nur in der Lage
 ist, Dualzahlen zu speichern. Im ASCII-Zeichensatz wird beispielsweise das
-Zeichen 'M' als 77 Dezimal bzw. 1001101 Dual gespeichert. Man könnte nun auch
+Zeichen `'M'` als 77 Dezimal bzw. 1001101 Dual gespeichert. Man könnte nun auch
 auf die Idee kommen, anstelle von
 
 ``` cpp
@@ -933,11 +886,12 @@ wird aus 'M' auf einmal eine öffnende Klammer (siehe Ausschnitt aus der ASCII-
 und EBCDIC-Zeichensatztabelle rechts).
 
 
-| ASCII | EBCDIC | Dezimal | Binär   |
-| L     |   <    |   76    | 1001100 |
-| M     |   (    |   77    | 1001101 |
-| N     |   +    |   78    | 1001110 |
-| …     | …      |   …     |    …    |
+| ASCII | EBCDIC | Dezimal |   Binär |
+|:------|:------:|--------:|--------:|
+| L     |   <    |      76 | 1001100 |
+| M     |   (    |      77 | 1001101 |
+| N     |   +    |      78 | 1001110 |
+| ...   |  ...   |     ... |  ...    |
 
 Man mag dem entgegnen, dass heute hauptsächlich der ASCII-Zeichensatz verwendet
 wird. Allerdings werden es die meisten Programmierer dennoch als schlechten Stil
@@ -967,11 +921,11 @@ unterstützt.
 Eine Übersicht der Datentypen befindet sich in: C-Programmierung: Datentypen
 
 
-[^1]: Der C-Standard legt die Breite eines Bytes über die Konstante `CHAR_BIT` als
-      implementierungsabhängig fest, die die Anzahl der Bits festlegt.
-      Vorgeschrieben sind `>= 8`, üblich ist `CHAR_BIT == 8`. Allerdings ist dies
-      nur von Interesse, wenn Sie Programme entwickeln wollen, die wirklich auf
-      jedem auch noch so exotischen Rechner laufen sollen.
+[^1]: Der C-Standard legt die Breite eines Bytes über die Konstante `CHAR_BIT`
+      als implementierungsabhängig fest, die die Anzahl der Bits festlegt.
+      Vorgeschrieben sind `>= 8`, üblich ist `CHAR_BIT == 8`. Allerdings ist
+      dies nur von Interesse, wenn Sie Programme entwickeln wollen, die wirklich
+      auf jedem auch noch so exotischen Rechner laufen sollen.
 
 [^2]: Wenn Sie nachgerechnet haben, ist Ihnen vermutlich aufgefallen, dass
       32.768 + 32.767 nur 65.534 ergibt, und nicht 65.535, wie man vielleicht
@@ -1089,12 +1043,14 @@ int main(void)
   return 0;
 }
 ```
-@run_main(size_of)
+@run
 
 Nach dem Ausführen des Programms erhält man die folgende Ausgabe:
 
-Der Typ `int` hat auf diesem System die Größe 4 Byte.
+``` bash
+Der Typ int hat auf diesem System die Größe 4 Byte.
 Die Variable x hat auf diesem System die Größe 4 Byte.
+```
 
 Die Ausgabe kann sich auf einem anderen System unterscheiden, je nachdem, wie
 breit der Typ `int` ist. In diesem Fall ist der Typ 4 Byte lang. Wie viel
@@ -1184,7 +1140,7 @@ int main (int argc, char *argv [])
   return 0;
 }
 ```
-@run_main(define_quadrat)
+@run
 
 Wenn Sie dieses Programm laufen lassen, wird es Ihnen sagen, dass das Quadrat
 von `2+3 = 11` sei. Die Ursache dafür liegt darin, dass der Präprozessor
@@ -1207,6 +1163,7 @@ int main(int argc,char *argv[])
   return 0;
 }
 ```
+@run
 
 #### Konstanten mit `const` definieren
 
@@ -1236,7 +1193,10 @@ int main()
   return 0;
 }
 ```
-@run_main(const)
+``` bash stdin
+12.34
+```
+@run_stdin
 
 In Zeile 5 wird die Konstante pi deklariert. Ihr muss sofort ein Wert zugewiesen
 werden, ansonsten gibt der Compiler eine Fehlermeldung aus.
@@ -1295,7 +1255,7 @@ int main()
   return 0;
 }
 ```
-@run_main(variable)
+@run
 
 Nach der Kompilierung und Ausführung des Programms erhält man die folgende
 Ausgabe:
@@ -1432,8 +1392,8 @@ Bei der Verwendung dieses Schlüsselworts sollte man folgendes bedenken:
   Compiler entscheiden automatisch, ob es effizient ist, ein `register` für die
   Variable zu reservieren. [1].
 
-In der Compiler-Dokumentation kann eingesehen werden, wie der Compiler register
-oder andere Optimierungen behandelt oder behandeln soll.
+In der Compiler-Dokumentation kann eingesehen werden, wie der Compiler
+`register` oder andere Optimierungen behandelt oder behandeln soll.
 
 ## Einfache Ein- und Ausgabe
 
@@ -1445,9 +1405,9 @@ kennenlernen.
 
 ### `printf`
 
-Die Funktion `printf` haben wir bereits in unseren bisherigen Programmen benutzt.
-Zeit also, sie genauer unter die Lupe zu nehmen. Die Funktion `printf` hat die
-folgende Syntax:
+Die Funktion `printf` haben wir bereits in unseren bisherigen Programmen
+benutzt. Zeit also, sie genauer unter die Lupe zu nehmen. Die Funktion `printf`
+hat die folgende Syntax:
 
 ``` c
  int printf (const char *format, ...);
@@ -1465,12 +1425,12 @@ haben wir der Funktion `printf` beispielsweise das Argument "Hallo Welt"
 übergeben.
 
 Außerdem kann eine Funktion einen Rückgabewert besitzen. In diesem Fall ist der
-Typ des Rückgabewertes `int` . Den Typ der Rückgabe erkennt man am Schlüsselwort,
+Typ des Rückgabewertes `int`. Den Typ der Rückgabe erkennt man am Schlüsselwort,
 das vor der Funktion steht. Eine Funktion, die keinen Wert zurückgibt, erkennen
 Sie an dem Schlüsselwort `void`.
 
-Die Bibliotheksfunktion `printf` dient dazu, eine Zeichenkette (engl. String) auf
-der Standardausgabe auszugeben. In der Regel ist die Standardausgabe der
+Die Bibliotheksfunktion `printf` dient dazu, eine Zeichenkette (engl. String)
+auf der Standardausgabe auszugeben. In der Regel ist die Standardausgabe der
 Bildschirm. Als Übergabeparameter besitzt die Funktion einen Zeiger auf einen
 konstanten String. Was es mit Zeigern auf sich hat, werden wir später noch
 sehen. Das `const` bedeutet hier, dass die Funktion den String nicht verändert.
@@ -1510,6 +1470,7 @@ int main()
   return 0;
 }
 ```
+@run
 
 Ausgabe:
 
@@ -1558,7 +1519,7 @@ int main()
   return 0;
 }
 ```
-@run_main(format)
+@run
 
 Nachdem Sie das Programm übersetzt und ausgeführt haben, erhalten Sie die
 folgende Ausgabe:
@@ -1610,7 +1571,7 @@ int main()
    return 0;
 }
 ```
-@run_main(flags)
+@run
 
 Wenn das Programm übersetzt und ausgeführt wird, erhalten wir die folgende
 Ausgabe:
@@ -1637,7 +1598,7 @@ int main()
   return 0;
 }
 ```
-@run_main(feldbreite)
+@run
 
 Wenn das Programm übersetzt und ausgeführt wird, erhalten wir die folgende
 Ausgabe:
@@ -1659,7 +1620,7 @@ sehen ist.
 
 Nach der Feldbreite folgt, durch einen Punkt getrennt, die Genauigkeit. Bei `%f`
 werden ansonsten standardmäßig 6 Nachkommastellen ausgegeben. Diese Angaben sind
-natürlich auch nur bei den Gleitkommatypen `float`  und `double`  sinnvoll, weil
+natürlich auch nur bei den Gleitkommatypen `float` und `double` sinnvoll, weil
 alle anderen Typen keine Nachkommastellen besitzen.
 
 Beispiel:
@@ -1676,7 +1637,7 @@ int main()
   return 0;
 }
 ```
-@run_main(nachkommastellen)
+@run
 
 Wenn das Programm übersetzt und ausgeführt wurde, erscheint die folgende Ausgabe
 auf dem Bildschirm:
@@ -1725,7 +1686,7 @@ int main(void)
   return 0;
 }
 ```
-@run_main(scanf)
+@run
 
 Kompiliert man das Programm und führt es aus, erhält man z.B. die folgende
 Ausgabe:
@@ -1789,12 +1750,7 @@ Escape-Sequenzen
 
 
 #### Escape-Sequenzen
-<!--
 
-
-
-@run: @compile_and_run(@0, "gcc -Wall main.c -o a.out",`"main.c"`, "./a.out",```{"main.c": `@1`}```)
--->
 Eine spezielle Darstellung kommt in C den Steuerzeichen zugute. Steuerzeichen
 sind Zeichen, die nicht direkt auf dem Bildschirm sichtbar werden, sondern eine
 bestimmte Aufgabe erfüllen, wie etwa das Beginnen einer neuen Zeile, das
@@ -1857,7 +1813,7 @@ int main(void)
   return 0;
 }
 ```
-@run_main(escape)
+@run
 
 Erzeugt auf dem Bildschirm folgende Ausgabe:
 
@@ -2162,7 +2118,7 @@ int main()
   return 0;
 }
 ```
-@run_main(shift)
+@run
 
 Nach dem Kompilieren und Übersetzen wird beim Ausführen des Programms die Zahl
 700 ausgegeben. Die Zahl hinter dem Leftshiftoperator `<<` gibt an, um wie viele
@@ -2337,7 +2293,9 @@ folgende Tabelle (der Leser möge sich anhand des Beispiels selbst davon
 | wahr      | falsch    | wahr     |
 | wahr      | wahr      | wahr     |
 
-Eine ODER-Verknüpfung in C wird durch den `|`-Operator repräsentiert. Beispiel:
+Eine ODER-Verknüpfung in C wird durch den `|`-Operator repräsentiert.
+
+Beispiel:
 
 ``` c
  int a;
@@ -2580,7 +2538,10 @@ int main(void)
   return 0;
 }
 ```
-@run_main(if)
+``` bash stdin
+666
+```
+@run_stdin
 
 Wir nehmen zunächst einmal an, dass der Benutzer die Zahl 7 eingibt. In diesem
 Fall ist der Ausdruck `zahl > 5` true (wahr) und liefert eine 1 zurück. Da dies
@@ -2619,7 +2580,10 @@ int main(void)
   return 0;
 }
 ```
-@run_main(if_else)
+``` bash stdin
+666
+```
+@run_stdin
 
 Nehmen wir an, dass der Benutzer die Zahl -5 eingibt. Der Ausdruck `zahl > 0`
 ist in diesem Fall falsch, weshalb der Ausdruck ein false liefert (was einer 0
@@ -2667,7 +2631,10 @@ int main(void)
   return 0;
 }
 ```
-@run_main(ifff)
+``` bash stdin
+-66
+```
+@run_stdin
 
 Versehentliche Fehler wie
 
@@ -2820,7 +2787,15 @@ int main(void)
    return 0;
 }
 ```
-@run_main(switch)
+``` bash stdin
+3
+4
+A
+3
+4
+b
+```
+@run_stdin
 
 Mit der `do-while`-Schleife wollen wir uns erst später beschäftigen. Nur so
 viel: Sie dient dazu, dass der in den Blockklammern eingeschlossene Teil nur
@@ -2879,7 +2854,7 @@ int main()
    return 0;
 }
 ```
-@run_main(for)
+@run
 
 Die Schleife beginnt mit dem Wert 1 (`i = 1`) und erhöht den Schleifenzähler `i`
 bei jedem Durchgang um 1 (`++i`). Solange der Wert `i` kleiner oder gleich 5 ist
@@ -2979,7 +2954,7 @@ int main()
    return 0;
 }
 ```
-@run_main(for_nested)
+@run
 
 Nach der Kompilierung und Übersetzung des Programms erscheint die folgende
 Ausgabe:
@@ -3042,7 +3017,7 @@ int main()
   return 0;
 }
 ```
-@run_main(while_getchar)
+@run
 
 Die Schleife wird abgebrochen, wenn der Benutzer die Eingabe (mit `<Strg>-<Z>`
 oder `<Strg>-<D>`) abschließt und somit das nächste zu liefernde Zeichen das
@@ -3088,7 +3063,7 @@ int main()
   return 0;
 }
 ```
-@run_main(while5)
+@run
 
 Ob man `while` oder `for` benutzt, hängt letztlich von der Vorliebe des
 Programmierers ab. In diesem Fall würde man aber vermutlich eher eine
@@ -3132,7 +3107,13 @@ int main(void)
  return 0;
 }
 ```
-@run_main(do_while)
+``` bash stdin
+12.12
+3
+-5
+0
+```
+@run_stdin
 
 Die Überprüfung, ob die Schleife fortgesetzt werden soll, findet in Zeile 14
 statt. Mit do in Zeile 8 wird die Schleife begonnen, eine Prüfung findet dort
@@ -3168,6 +3149,7 @@ int main(void)
   return 0;
 }
 ```
+@run
 
 Das Programm berechnet in ganzzahligen Schritten die Werte für 1/i im Intervall
 `[-10, 10]`. Da die Division durch Null nicht erlaubt ist, springen wir mit
@@ -3206,7 +3188,12 @@ int main(void) {
     return 0;
 }
 ```
-@run_main(continue)
+``` bash stdin
+1211
+000
+2323
+```
+@run_stdin
 
 
 Wie Sie sehen ist die `while`-Schleife als Endlosschleife konzipiert. Hat man
@@ -3288,7 +3275,110 @@ int main(void)
   return 0;
 }
 ```
-@run_main(tastaturbuffer)
+``` bash -stdin
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+
+```
+@run_stdin
 
 Wie Sie sehen, ist die innere `while`-Schleife als Endlosschleife konzipiert.
 Hat der Spieler die richtige Zahl erraten, so wird der `else`-Block ausgeführt.
@@ -3494,12 +3584,16 @@ int main()
 	return 0;
 }
 ```
-@run_main(function)
+``` bash stdin
+12
+44
+```
+@run_stdin
 
 * In Zeile 3 beginnt die Funktionsdefinition. Das `float`  ganz am Anfang der
   Funktion, der sogenannte Funktionstyp, sagt dem Compiler, dass ein Wert mit
-  dem Typ `float`  zurückgegeben wird. In Klammern werden die Übergabeparameter `h`
-  und `r` deklariert, die der Funktion übergeben werden.
+  dem Typ `float`  zurückgegeben wird. In Klammern werden die Übergabeparameter
+  `h` und `r` deklariert, die der Funktion übergeben werden.
 * Mit `return` wird die Funktion beendet und ein Wert an die aufrufende Funktion
   zurückgegeben (hier: `main`). In unserem Beispiel geben wir den Wert von `o`
   zurück, also das Ergebnis unserer Berechnung. Der Datentyp des Ausdrucks
@@ -3508,19 +3602,20 @@ int main()
   Rückgabewert `void` angegeben werden. Eine Funktion, die lediglich einen Text
   ausgibt hat beispielsweise den Rückgabetyp `void` , da sie keinen Wert
   zurückgibt.
-* In Zeile 26 wird die Funktion `zylinder_oberflaeche` aufgerufen. Hier werden die
-  beiden Parameter `h` und `r` übergeben. Der zurückgegebene Wert wird ausgegeben.
-  Es wäre aber genauso denkbar, dass der Wert einer Variable zugewiesen, mit
-  einem anderen Wert verglichen oder mit dem Rückgabewert weitergerechnet wird.
+* In Zeile 26 wird die Funktion `zylinder_oberflaeche` aufgerufen. Hier werden
+  die beiden Parameter `h` und `r` übergeben. Der zurückgegebene Wert wird
+  ausgegeben. Es wäre aber genauso denkbar, dass der Wert einer Variable
+  zugewiesen, mit einem anderen Wert verglichen oder mit dem Rückgabewert
+  weitergerechnet wird.
 * Der Rückgabewert muss aber nicht ausgewertet werden. Es ist kein Fehler, wenn
   der Rückgabewert unberücksichtigt bleibt. Man kann allerdings einer Funktion
   ein sogenanntes Attribut zuweisen, das bewirkt, dass der Compiler eine Warnung
   ausgibt, wenn der Rückgabewert ignoriert wird, was z.B. bei `scanf` der Fall
   ist.
 
-Auch die Funktion `main` hat einen Rückgabewert. Ist der Wert 0, so bedeutet dies,
-dass das Programm ordnungsgemäß beendet wurde, ist der Wert -1, so bedeutet
-dies, dass ein Fehler aufgetreten ist.
+Auch die Funktion `main` hat einen Rückgabewert. Ist der Wert 0, so bedeutet
+dies, dass das Programm ordnungsgemäß beendet wurde, ist der Wert -1, so
+bedeutet dies, dass ein Fehler aufgetreten ist.
 
 
 #### Beispiele fehlerhafter Funktionen
@@ -3533,8 +3628,9 @@ void foo()
 }
 ```
 
-Eine Funktion, die als `void` deklariert wurde, darf keinen Rückgabetyp erhalten.
-Der Compiler sollte hier eine Warnung oder sogar eine Fehlermeldung ausgeben.
+Eine Funktion, die als `void` deklariert wurde, darf keinen Rückgabetyp
+erhalten. Der Compiler sollte hier eine Warnung oder sogar eine Fehlermeldung
+ausgeben.
 
 ``` c
 #include <stdio.h>
@@ -3555,8 +3651,8 @@ nicht nur einen Wert zurückgibt sondern die Funktion `foo()` auch beendet.
 
 In der ursprünglichen Sprachdefinition von K&R wurde nicht gefordert, dass jede
 Funktion einen Rückgabetyp besitzen muss. Wenn der Rückgabetyp fehlte, wurde
-standardmäßig `int` angenommen. Dies ist aber inzwischen nicht mehr erlaubt. Jede
-Funktion muss einen Rückgabetyp explizit angeben.
+standardmäßig `int` angenommen. Dies ist aber inzwischen nicht mehr erlaubt.
+Jede Funktion muss einen Rückgabetyp explizit angeben.
 
 Wenn eine Funktion mit einem Rückgabewert, der nicht `void` ist, nichts mittels
 `return` zurückgibt, gibt der Compiler eine Warnung aus und der zurückgegebene
@@ -3641,7 +3737,11 @@ float zylinder_oberflaeche(float h, float r)
 	return o;
 }
 ```
-@run_main(zylinder)
+``` bash stdin
+3.1
+4.2
+```
+@run_stdin
 
 Der Prototyp wird in Zeile 5 deklariert, damit die Funktion in Zeile 21
 verwendet werden kann. An dieser Stelle kann der Compiler auch prüfen, ob der
@@ -3669,11 +3769,12 @@ int foo2(void);
 
 int main()
 {
-	foo1(1, 2, 3); // kein Fehler
-	foo2(1, 2, 3); // Fehler
-	return 0;
+  foo1(1, 2, 3); // kein Fehler
+  foo2(1, 2, 3); // Fehler
+  return 0;
 }
 ```
+@run
 
 Bei Aufruf der Funktion `foo2` in Zeile 7 gibt der Compiler eine Fehlermeldung
 aus, bei Aufruf der Funktion `foo1` in Zeile 6 nicht.
@@ -3789,7 +3890,7 @@ void funktion2( )
     printf( "\nLokale Variable b: %i \n", lokal_b );
 }
 ```
-@run_main(inline)
+@run
 
 Die Variablen `GLOBAL_A` und `GLOBAL_B` sind zu Beginn des Programms und
 außerhalb der Funktion deklariert worden und gelten deshalb im ganzen Programm.
@@ -3816,7 +3917,7 @@ int main( void )
     return 0;
 }
 ```
-@run_main(global)
+@run
 
 Das Ergebnis:
 
@@ -3850,7 +3951,7 @@ void func( )
     printf( "\nGlobale Variable: %i \n", zahl );
 }
 ```
-@run_main(local_global)
+@run
 
 Neben der globalen Variable `zahl` wird in der Hauptfunktion `main` eine weitere
 Variable mit dem Namen zahl deklariert. Die globale Variable wird durch die
@@ -3889,7 +3990,7 @@ int main( void )
     return 0;
 }
 ```
-@run_main(verdeckung)
+@run
 
 Hier werden 3 verschiedene Variablen mit dem Namen `i` angelegt, aber nur das
 innerste `i` ist für das `printf` von Belang. Dieses Beispiel ist intuitiv
@@ -4083,7 +4184,7 @@ int main()
   return 0;
 }
 ```
-@run_main(zeiger)
+@run
 
 Abb. 1 - Das (vereinfachte) Schema zeigt wie das Beispielprogramm arbeitet. Der
 Zeiger a zeigt auf die Variable `b`. Die Speicherstelle des Zeigers a besitzt
@@ -4132,7 +4233,7 @@ int main()
   return 0;
 }
 ```
-@run_main(zeigerarithmetik)
+@run
 
 `i++` erhöht hier nicht den Inhalt (`*i`), sondern die Adresse des Zeigers
 (`i`). Man sieht aufgrund der Ausgabe auch leicht, wie groß ein `int` auf dem
@@ -4218,7 +4319,7 @@ int main()
     return 0;
 }
 ```
-@run_main(function_pointer)
+@run
 
 
 ### `void`-Zeiger
@@ -4289,7 +4390,7 @@ int main()
   return 0;
 }
 ```
-@run_main(call_by_balue)
+@run
 
 Das Programm erzeugt nach der Kompilierung die folgende Ausgabe auf dem
 Bildschirm:
@@ -4350,7 +4451,7 @@ int main()
   return 0;
 }
 ```
-@run_main(call_by_value2)
+@run
 
 In diesem Fall ist das Ergebnis richtig:
 
@@ -4413,7 +4514,7 @@ int main()
 	return 0;
 }
 ```
-@run_main(pointer5)
+@run
 
 Bei diesem Programm zeigt ein Pointer auf eine Variable, die aus dem
 Gültigkeitsbereich fällt. Der Wert, auf den der Pointer zeigt, ist dann nicht
@@ -4518,7 +4619,16 @@ int main( void )
     return 0;
 }
 ```
-@run_main(arrays)
+``` bash stdin
+10
+11
+33
+123
+123
+12
+12
+```
+@run_stdin
 
 ACHTUNG: Bei einer Zuweisung von Arrays wird nicht geprüft, ob eine
 Feldüberschreitung vorliegt. So führt beispielsweise
@@ -4764,7 +4874,14 @@ int main( void )
     return 0;
 }
 ```
-@run_main(init_array)
+``` bash stdin
+
+
+
+
+
+```
+@run_stdin
 
 ### Arrays initialisieren
 
@@ -5147,7 +5264,7 @@ int main( void )
     return 0;
 }
 ```
-@run_main(array_size)
+@run
 
 Die Speicherplatzgröße eines gesamten Arrays hängt vom verwendeten Datentyp bei
 der deklaration und von der Anzahl der Elemente die es beinhaltet ab.
@@ -5209,7 +5326,7 @@ int main( void )
     return 0;
 }
 ```
-@run_main(array_func)
+@run
 
 Nach dem Ausführen erhalten Sie als Ausgabe:
 
@@ -5266,7 +5383,7 @@ int main( void )
     return 0;
 }
 ```
-@run_main(array_func2)
+@run
 
 Mehrdimensionale Arrays übergeben Sie entsprechend der Dimensionszahl wie
 eindimensionale. `[]` und `*` lassen sich auch hier in geradezu abstrusen
@@ -5297,7 +5414,7 @@ int main( void )
     return 0;
 }
 ```
-@run_main(array_func3)
+@run
 
 ### Zeigerarithmetik
 
@@ -5334,6 +5451,7 @@ int main( void )
     return 0;
 }
 ```
+@run
 
 Wir deklarieren einen Zeiger sowie ein Array und weisen dem Zeiger die Adresse
 des ersten Elementes zu (Abb. 2). Da der Zeiger der auf das erste Element im
@@ -5407,6 +5525,7 @@ int main( void )
     return 0;
 }
 ```
+@run
 
 Um die neue Adresse berechnen zu können, muss der Compiler die Größe des
 Zeigertyps kennen. Deshalb ist es nicht möglich, die Zeigerarithmetik auf den
@@ -5460,7 +5579,10 @@ int main(void)
     return 0;
 }
 ```
-@run_main(zeiger22)
+``` bash stdin
+Dies ist ein Beispielsatz.
+```
+@run_stdin
 
 Sehen wir uns dieses Beispiel etwas genauer an:
 
@@ -5488,9 +5610,9 @@ In den folgenden Schleife wird der Zeiger `*p_satz` zuerst auf das erste bzw.
 zweite Element des Arrays `satz[]` gerichtet und dann pro Schleifendurchlauf um
 zwei erhöht, so lange der Wert von `p_satz` kleiner ist als die Länge der
 Zeichenkette. Zugleich wird pro Durchlauf das Array-Element, auf das der
-`p_satz`-Zeiger gerichtet ist, an die Zeigervariable `p_neuersatz` (und damit ans
-jeweilige `neuersatz[]`-Element) übergeben und diese anschließend erhöht, um im
-folgenden Durchlauf auf das nächste Array-Element zugreifen zu können.
+`p_satz`-Zeiger gerichtet ist, an die Zeigervariable `p_neuersatz` (und damit
+ans jeweilige `neuersatz[]`-Element) übergeben und diese anschließend erhöht, um
+im folgenden Durchlauf auf das nächste Array-Element zugreifen zu können.
 
 Mit der ersten Schleife werden also zuerst alle geraden Elemente (also
 `satz[0]`, `satz[2]`, etc.) in das `char`-Array `neuersatz[]` geschrieben, mit
@@ -5576,7 +5698,7 @@ int main(void)
   return 0;
 }
 ```
-@run_main(strcpy)
+@run
 
 Ausgabe:
 
@@ -5622,7 +5744,7 @@ int main ()
     return 0;
 }
 ```
-@run_main(strncpy)
+@run
 
 Vorsicht: Benutzen Sie` sizeof()` in diesem Zusammenhang nur bei
 Character-Arrays. `sizeof()` gibt die Anzahl der reservierten Bytes zurück. In
@@ -5661,7 +5783,7 @@ int main(void)
   return 0;
 }
 ```
-@run_main(strcat)
+@run
 
 Ausgabe:
 
@@ -5705,7 +5827,7 @@ int main(void)
   return 0;
 }
 ```
-@run_main(strncat)
+@run
 
 Ausgabe:
 
@@ -5757,7 +5879,7 @@ int main(void) {
     return 0;
 }
 ```
-@run_main(strncat)
+@run
 
 Ausgabe:
 
@@ -5793,7 +5915,7 @@ int main(void){
     return 0;
 }
 ```
-@run_main(strcspn)
+@run
 
 Ausgabe:
 
@@ -5825,7 +5947,7 @@ int main()
    return 0;
 }
 ```
-@run_main(strpbrk)
+@run
 
 Ausgabe:
 
@@ -5857,7 +5979,7 @@ int main()
   return 0;
 }
 ```
-@run_main(strchr)
+@run
 
 Ausgabe:
 
@@ -5887,7 +6009,7 @@ int main()
   return 0;
 }
 ```
-@run_main(strchr2)
+@run
 
 Ausgabe:
 
@@ -5939,7 +6061,10 @@ int main()
 
 }
 ```
-@run_main(strrchr)
+``` bash stdin
+Das ist ein test
+```
+@run_stdin
 
 
 Beispiel 2:
@@ -5966,7 +6091,7 @@ int main()
    return 0;
 }
 ```
-@run_main(strrchr2)
+@run
 
 Der Pointer `ptr` zeigt nach `strrchr()` genau auf die Speicherstelle des
 Strings, in der das erste Trennzeichen von hinten steht. Wenn man nun an diese
@@ -6027,7 +6152,7 @@ int main()
   return 0;
 }
 ```
-@run_main(strcmp)
+@run
 
 Ausgabe:
 
@@ -6073,7 +6198,7 @@ int main()
    return 0;
 }
 ```
-@run_main(strncmp)
+@run
 
 Ausgabe:
 
@@ -6108,7 +6233,7 @@ int main()
    return 0;
 }
 ```
-@run_main(strspn)
+@run
 
 Ausgabe:
 
@@ -6142,7 +6267,8 @@ int main()
   return 0;
 }
 ```
-@run_main(strlen)
+@run
+
 Ausgabe:
 
 ```
@@ -6177,7 +6303,7 @@ int main ()
   return 0;
 }
 ```
-@run_all(strstr)
+@run
 
 Ausgabe:
 
@@ -6215,7 +6341,7 @@ int main(void)
   return 0;
 }
 ```
-@run_main(str_gefahren)
+@run
 
 Die beiden Zeilen 8 und 11 bringen das Programm möglicherweise zum Absturz:
 
@@ -6279,7 +6405,7 @@ int main(void)
   return 0;
 }
 ```
-@run_main(str_iteration)
+@run
 
 Der Vergleich der einzelnen Zeichen von `char *string` mit `char from` wird mit
 einer Schleife bewerkstelligt. Der Zeiger `string` (diese Schreibweise
@@ -6328,11 +6454,13 @@ Weitere Funktionen von `ctype.h` sind:
 * `int islower(int c)` testet auf Kleinbuchstaben (a-z)
 * `int isprint(int c)` testet auf druckbare Zeichen ohne Leerzeichen
 * `int ispunct(int c)` testet auf druckbare Interpunktionszeichen
-* `int isspace(int c)` testet auf Zwischenraumzeichen (engl. whitespace) (`' '`, `'\f'`, `'\n'`, `'\r'`, `'\t'`, `'\v'`)
+* `int isspace(int c)` testet auf Zwischenraumzeichen (engl. whitespace)
+  (`' '`, `'\f'`, `'\n'`, `'\r'`, `'\t'`, `'\v'`)
 * `int isupper(int c)` testet auf Großbuchstaben (A-Z)
 * `int isxdigit(int c)` testet auf hexadezimale Ziffern (0-9, a-f, A-F)
 
-Zusätzlich sind noch zwei Funktionen für die Umwandlung in Groß- bzw. Kleinbuchstaben definiert:
+Zusätzlich sind noch zwei Funktionen für die Umwandlung in Groß- bzw.
+Kleinbuchstaben definiert:
 
 * `int tolower(int c)` wandelt Groß- in Kleinbuchstaben um
 * `int toupper(int c)` wandelt Klein- in Großbuchstaben um
@@ -6422,7 +6550,7 @@ int main(void)
 	return 0;
 }
 ```
-@run_main(struct)
+@run
 
 ```
 Groesse : 8
@@ -6600,7 +6728,7 @@ int main(void)
  return 0;
 }
 ```
-@run_main(union)
+@run
 
 Folgendes wäre also nicht möglich, da die von der Union umschlossene Struktur
 zwar definiert aber nicht deklariert wurde:
@@ -6785,7 +6913,8 @@ int i = (int)pi; // explizite Typumwandlung
 
 liefert `i=3`.
 
-Die explizite Typumwandlung entspricht allgemein dem Konzept der Einschränkenden Typumwandlung.
+Die explizite Typumwandlung entspricht allgemein dem Konzept der Einschränkenden
+Typumwandlung.
 
 ### Verhalten von Werten bei Typumwandlungen
 
@@ -7067,7 +7196,7 @@ int main()
     return 0;
 }
 ```
-@run_main(listen)
+@run
 
 ## Fehlerbehandlung
 
@@ -7083,10 +7212,15 @@ Beispiel:
 
 int main(void){
     #ifdef DEBUG
-    führe foo aus (z.B. printf("bin gerade hier\n"); )
+    // führe foo aus (z.B.
+    printf("bin gerade hier\n");
+    // )
     #endif
-    bar; }
+    //bar;
+    return 0;
+}
 ```
+@run
 
 Eine andere Methode besteht darin, `assert()` zu benutzen.
 
@@ -7731,9 +7865,6 @@ der Modus zu den bei `open` angegebenen Modi kompatibel ist.
 
 ## Rekursion
 
-
-### Rekursion
-
 Eine Funktion, die sich selbst aufruft, wird als rekursive Funktion bezeichnet.
 Den Aufruf selbst nennt man Rekursion. Als Beispiel dient die
 Fakultäts-Funktion $n!$, die sich rekursiv als $n(n-1)!$ definieren lässt (wobei
@@ -7763,7 +7894,10 @@ int main()
   return 0;
 }
 ```
-@run_main(rekusion)
+```bash stdin
+12
+```
+@run_stdin
 
 ### Beseitigung der Rekursion
 
@@ -7815,7 +7949,7 @@ int main(void)
 
   printf("\nGib x ein: ");
   scanf("%d",&x);
-  printf("\nGib n ein: ");
+  printf("\nGib n ein: \n");
   scanf("%d",&n);
 
   if(n<0)
@@ -7831,7 +7965,11 @@ int main(void)
   }
 }
 ```
-@run_main(potenz)
+``` bash stdin
+3
+4
+```
+@run_stdin
 
 Multiplizieren von zwei Zahlen als Ausschnitt:
 
@@ -8022,14 +8160,16 @@ Auch wenn es im C-Standard die Typen "`float`" und "`double`" gibt, so sind
 diese nur bedingt einsatzfähig. Durch die interne Darstellung einer
 Floatingpointzahl auf eine fest definierte Anzahl von Bytes in
 Exponentialschreibweise, kann es bei diesen Datentypen schnell zu
-Rundungsfehlern kommen, insbesondere sind davon Gleichheitsoperationen  (`==`,`!=`,`<=`,`>=`)
+Rundungsfehlern kommen, insbesondere sind davon Gleichheitsoperationen
+(`==`,`!=`,`<=`,`>=`)
 betroffen, die Ergebnisse sind dabei oft überraschend. Deshalb sollten Sie in
 ihren Projekten überlegen ob Sie nicht die Float-Berechnungen durch
 Integerdatentypen ersetzen können, um eine bessere Genauigkeit zu erhalten. So
 kann beispielsweise bei finanzmathematischen Programmen, welche cent- oder
-zehntelcentgenau rechnen, oft der größtmögliche Integerdatentyp (C89: `long
-int`/`unsigned long int`; C99 `intmax_t`/`uintmax_t`) benutzt werden. Auch
-hierbei sind aber Überläufe/Unterläufe zu beachten und auszuschließen.
+zehntelcentgenau rechnen, oft der größtmögliche Integerdatentyp
+(C89: `long int`/`unsigned long int`; C99 `intmax_t`/`uintmax_t`) benutzt
+werden. Auch hierbei sind aber Überläufe/Unterläufe zu beachten und
+auszuschließen.
 
 ### Die Eingabe von Werten
 
@@ -8103,8 +8243,12 @@ nicht besonders gut, so dass die hiermit erzeugten Zufallszahlen einige
 schlechte statistische Eigenschaften aufweisen. Eine Anwendung ist etwa in
 Kryptografie oder Monte-Carlo-Simulationen nicht vertretbar. Hier sollten
 bessere Zufallszahlengeneratoren eingesetzt werden. Passende Algorithmen finden
-sich in der GNU scientific library [1] oder in Numerical Recipes [2] (C Version
-frei zugänglich [3]).
+sich in der GNU scientific library[^1] oder in Numerical Recipes[^2] (C Version
+frei zugänglich[^3]).
+
+[^1]: http://www.gnu.org/software/gsl
+[^2]: http://nr.com
+[^3]: http://www.nrbook.com/a/bookcpdf.php
 
 ### Undefiniertes Verhalten
 
@@ -8122,18 +8266,18 @@ Wenn für eine Funktion zwar ein Rückgabewert angegeben wurde, jedoch ohne
 return-Statement endet, gibt der Compiler bei Standardeinstellung keinen Fehler
 aus. Problematisch an diesem Zustand ist, dass eine solche Funktion in diesem
 Fall eine zufällige, nicht festgelegte Zahl zurück gibt. Abhilfe schafft nur ein
-höheres Warning-Level (siehe #Der Compiler ist dein Freund]) bzw. explizit diese
-Warnungen mit dem Parameter -Wreturn-type einzuschalten.
+höheres Warning-Level (siehe [Der Compiler ist dein Freund](#163)) bzw. explizit
+diese Warnungen mit dem Parameter -Wreturn-type einzuschalten.
 
 ### Wartung des Codes
 
 Ein Programm ist ein technisches Produkt, und wie alle anderen technischen
 Produkte sollte es wartungsfreundlich sein. So dass Sie oder Ihr Nachfolger in
 der Lage sind, sich schnell wieder in das Progamm einzuarbeiten. Um das zu
-erreichen, sollten Sie sich einen einfach zu verstehenden Programmierstil für
-das Projekt suchen und sich selbst dann an den Stil halten, wenn ein anderer ihn
-verbrochen hat. Beim Linux-Kernel werden auch gute Patches abgelehnt, weil sie
-sich z.B. nicht an die Einrücktiefe gehalten haben.
+erreichen, sollten Sie sich einen einfach zu verstehenden
+[Programmierstil](#156) für das Projekt suchen und sich selbst dann an den Stil
+halten, wenn ein anderer ihn verbrochen hat. Beim Linux-Kernel werden auch gute
+Patches abgelehnt, weil sie sich z.B. nicht an die Einrücktiefe gehalten haben.
 
 ### Wartung der Kommentare
 
@@ -8150,10 +8294,11 @@ als mit den richtigen Kommentaren.
 ### Weitere Informationen
 
 Ausführlich werden die Fallstricke in C und die dadurch möglichen
-Sicherheitsprobleme im CERT C Secure Coding Standard dargestellt [4]. Er besteht
-aus einem Satz von Regeln und Empfehlungen, die bei der Programmierung beachtet
-werden sollten.
+Sicherheitsprobleme im _CERT C Secure Coding Standard_ dargestellt [^4]. Er
+besteht aus einem Satz von Regeln und Empfehlungen, die bei der Programmierung
+beachtet werden sollten.
 
+[^4]: https://www.securecoding.cert.org/confluence/display/seccode/CERT+C+Secure+Coding+Standard
 
 ## Komplexe Zahlen
 
@@ -8179,7 +8324,7 @@ int main()
    return 1;
 }
 ```
-@run_main(complex1)
+@run
 
 ```
 3.000000 + 4.000000 * i
@@ -8216,7 +8361,7 @@ int main()
    return 0;
 }
 ```
-@run_main(complex2)
+@run
 
 ```
 5.000000 * e^(1.570796 * i) = 0.000000 + 5.000000 * i
@@ -8250,40 +8395,48 @@ auch einen Compiler. Je nach Plattform hat man verschiedene Alternativen:
 Wer zu Anfang nicht all zu viel Aufwand betreiben will, kann mit relativ kleinen
 Compilern (ca. 2-5 MByte) inkl. IDE/Editor anfangen:
 
-* Pelles C, kostenlos. Hier befindet sich der deutsche Mirror.
-* lcc-win32, kostenlos für private Zwecke.
-* cc386, Open Source.
+* [Pelles C](http://www.smorgasbordet.com/pellesc), kostenlos.
+  [Hier](http://www.pellesc.de/) befindet sich der deutsche Mirror.
+* [lcc-win32](http://www.cs.virginia.edu/~lcc-win32/),
+  kostenlos für private Zwecke.
+* [cc386](http://www.members.tripod.com/~ladsoft/cc386.htm), Open Source.
 
 Wer etwas mehr Aufwand (finanziell oder an Download) nicht scheut, kann zu
 größeren Paketen inkl. IDE greifen:
 
-* Microsoft Visual Studio, kommerziell, enthält neben dem C-Compiler auch
-  Compiler für C#, C++ und VisualBasic. Visual C++ Express ist die kostenlose
-  Version.
-* CodeGear C++ Builder, kommerziell, ehemals Borland C++ Builder.
-* Open Watcom, Open Source.
-* wxDevCpp, komplette IDE basierend auf dem GNU C Compiler (Mingw32), Open
-  Source.
+* [Microsoft Visual Studio](http://www.microsoft.com/germany/VisualStudio/),
+  kommerziell, enthält neben dem C-Compiler auch Compiler für C#, C++ und
+  VisualBasic. [Visual C++ Express](http://www.microsoft.com/germany/express/)
+  ist die kostenlose Version.
+* [CodeGear C++ Builder](http://www.codegear.com/products/cppbuilder),
+  kommerziell, ehemals Borland C++ Builder.
+* [Open Watcom](http://www.openwatcom.org), Open Source.
+* [wxDevCpp](http://wxdsgn.sourceforge.net/), komplette IDE basierend
+  auf dem GNU C Compiler (Mingw32), Open Source.
 
 Wer einen (kostenlosen) Kommandozeilen-Compiler bevorzugt, kann zusätzlich zu
 obigen noch auf folgende Compiler zugreifen:
 
-* Mingw32, der GNU-Compiler für Windows, Open Source.
-* Digital Mars Compiler, kostenlos für private Zwecke.
-* Version 5.5 des Borland Compilers, kostenlos für private Zwecke (Konfiguration
-  und Gebrauch).
+* [Mingw32](http://www.mingw.org/), der GNU-Compiler für Windows, Open Source.
+* [Digital Mars Compiler](http://www.digitalmars.com/),
+  kostenlos für private Zwecke.
+* [Version 5.5 des Borland Compilers](http://cc.codegear.com/Free.aspx?id=24778),
+  kostenlos für private Zwecke
+  ([Konfiguration](http://dn.codegear.com/article/21205) und
+  [Gebrauch](http://dn.codegear.com/article/20997)).
 
 #### Unix und Linux
 
 Für alle Unix Systeme existieren C-Compiler, die meist auch schon vorinstalliert
 sind. Insbesondere, bzw. darüber hinaus, existieren folgende Compiler:
 
-* GNU C Compiler, Open Source. Ist Teil jeder Linux-Distribution, und für
-  praktisch alle Unix-Systeme verfügbar.
-* clang, Open Source.
-* Tiny C Compiler, Open Source.
-* Portable C Compiler, Open Source.
-* Der Intel C/C++ Compiler, kostenlos für private Zwecke.
+* [GNU C Compiler](http://gcc.gnu.org), Open Source. Ist Teil jeder
+  Linux-Distribution, und für praktisch alle Unix-Systeme verfügbar.
+* [clang](http://clang.llvm.org), Open Source.
+* [Tiny C Compiler](http://www.tinycc.org), Open Source.
+* [Portable C Compiler](http://pcc.ludd.ltu.se), Open Source.
+* [Der Intel C/C++ Compiler](http://software.intel.com/en-us/articles/intel-compilers/),
+  kostenlos für private Zwecke.
 
 Alle gängigen Linux-Distributionen stellen außerdem zahlreiche
 Entwicklungsumgebungen zur Verfügung, die vor allem auf den GNU C Compiler
@@ -8293,12 +8446,13 @@ zurückgreifen.
 
 Apple stellt selbst einen Compiler mit Entwicklungsumgebung zur Verfügung:
 
-* Xcode, eine komplette Entwicklungsumgebung für: C, C++, Java und andere, die
-  Mac OS X beiliegt.
-* Apple's Programmer's Workshop kostenlose Entwicklungsumgebung für MacOS 7 bis
-  einschließlich 9.2.2.
-* Gnu Compiler Collection Gcc, wird über das Terminal gesteuert. Ist nach der
-  Installation von Xcode dabei.
+* [Xcode](http://developer.apple.com/tools/xcode), eine komplette
+  Entwicklungsumgebung für: C, C++, Java und andere, die Mac OS X beiliegt.
+* [Apple's Programmer's Workshop](http://developer.apple.com/tools/mpw-tools)
+  kostenlose Entwicklungsumgebung für MacOS 7 bis einschließlich 9.2.2.
+* [Gnu Compiler Collection](http://gcc.gnu.org) Gcc, wird über das Terminal
+  gesteuert. Ist nach der Installation von
+  [Xcode](http://developer.apple.com/tools/xcode) dabei.
 
 #### Amiga
 
@@ -8308,10 +8462,12 @@ Apple stellt selbst einen Compiler mit Entwicklungsumgebung zur Verfügung:
 
 #### Atari
 
-* GNU C Compiler, existiert auch in gepflegter Fassung für das freie Posix
-  Betriebssystem MiNT, auch als Crosscompiler.
-* AHCC, ein Pure-C kompatibler Compiler/Assembler, funktioniert auch unter
-  Single-TOS und ist ebenfalls Open Source.
+* [GNU C Compiler](http://vincent.riviere.free.fr/soft/m68k-atari-mint),
+  existiert auch in gepflegter Fassung für das freie Posix Betriebssystem MiNT,
+  auch als Crosscompiler.
+* [AHCC](http://members.chello.nl/h.robbers), ein Pure-C kompatibler
+  Compiler/Assembler, funktioniert auch unter Single-TOS und ist ebenfalls Open
+  Source.
 
 Neben diesen gibt es noch zahllose andere C-Compiler, von optimierten Intel-
 oder AMD-Compilern bis hin zu Compilern für ganz exotische Plattformen (cc65 für
@@ -8330,7 +8486,8 @@ Der GCC kompiliert und linkt nun die "`Quellcode.c`" und gibt es als "Programm"
 aus. Das Flag `-c` sorgt dafür, dass nicht gelinkt wird und bei `-S` wird auch
 nicht assembliert. Der GCC enthält nämlich einen eigenen Assembler, den GNU
 Assembler, der als Backend für die verschiedenen Compiler dient. Um
-Informationen über weitere Parameter zu erhalten, verwenden Sie bitte man `gcc`.
+Informationen über weitere Parameter zu erhalten, verwenden Sie bitte
+[`man gcc`](http://www.manpage.org/cgi-bin/man/man2html?gcc-4.0+1).
 
 ### Microsoft Visual Studio
 
@@ -8362,15 +8519,15 @@ Die folgenden Zeichen sind in C erlaubt:
 
 * Großbuchstaben:
 
-  A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+  `A B C D E F G H I J K L M N O P Q R S T U V W X Y Z`
 
 * Kleinbuchstaben:
 
-  a b c d e f g h i j k l m n o p q r s t u v w x y z
+  `a b c d e f g h i j k l m n o p q r s t u v w x y z`
 
 * Ziffern:
 
-  0 1 2 3 4 5 6 7 8 9
+  `0 1 2 3 4 5 6 7 8 9`
 
 * Sonderzeichen:
 
@@ -8405,7 +8562,7 @@ Zeichen ersetzt. Diese Ersetzung erfolgt vor jeder anderen Bearbeitung.
 ANSI C (C89)/ISO C (C90) Schlüsselwörter:
 
 * `auto`
-* `break`
+* [`break`](#57)
 * `case`
 * `char`
 * `const`
@@ -9112,6 +9269,8 @@ gälte.
 | 1         | `,`                          | L - R          | Komma-Operator              |
 
 ## Datentypen
+
+TODO: Image https://de.wikibooks.org/wiki/C-Programmierung:_Datentypen#/media/File:Datentypen_in_C.svg
 
 ### Grunddatentypen
 
