@@ -24,7 +24,7 @@ $.ajax ({
             CompilerArgs : @2}
     }).done(function(data) {
         if (data.Errors == null) {
-            send.lia("eval", data.Result+"\n-------------------\n"+data.Stats.replace(/, /g, ",\n"));
+            send.lia("eval", data.Result+"\n-------------------\n"+data.Stats.replace(/, /g, "\n"));
         } else {
             send.lia("log", data.Errors, [], false);
             send.lia("eval", "LIA: stop");
