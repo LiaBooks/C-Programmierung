@@ -1,92 +1,19 @@
 <!--
 author:   André Dietrich
 
-version:  0.0.1
+version:  1.0.0
 
 language: de
 
 narrator: Deutsch Female
 
-script:   https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js
+import: https://raw.githubusercontent.com/liaScript/rextester_template/master/README.md
 
-@eval
-<script>
-//var result = null;
-var error  = false;
+@run: @Rextester.C
 
-console.log = function(e){ send.lia("log", JSON.stringify(e), [], true); };
-
-function grep_error(output) {
-  let errors = output.match(/:(\d+):(\d+): error: (.+)/g);
-
-  let i = 0;
-  for(i = 0; i < errors.length; i++) {
-      let e = errors[i].match(/:(\d+):(\d+): error: (.+)/i);
-
-      errors[i] = { row : e[1]-1, column : e[2], text : e[3], type : "error"};
-  }
-  return errors;
-}
-
-function grep_warning(output) {
-  let errors = output.match(/:(\d+):(\d+): warning: (.+)/g);
-
-  let i = 0;
-  for(i = 0; i < errors.length; i++) {
-      let e = errors[i].match(/:(\d+):(\d+): warning: (.+)/i);
-
-      errors[i] = { row: e[1]-1, column : e[2], text : e[3], type : "warning"};
-  }
-  return errors;
-}
-
-
-$.ajax ({
-    url: "https://rextester.com/rundotnet/api",
-    type: "POST",
-    timeout: 10000,
-    data: { LanguageChoice: @0,
-            Program: `@input`,
-            Input: `@1`,
-            CompilerArgs : @2}
-    }).done(function(data) {
-        if (data.Errors == null) {
-
-/*
-            let warnigs = [];
-
-            if(data.Warnings)
-              warnings = [grep_warning(data.Warnings)];
-
-            send.lia("log", data.Result+"\n-------------------\n"+data.Stats.replace(/, /g, "\n"), warnings, true);
-            send.lia("eval", "LIA: stop");  
-*/
-            send.lia("eval", data.Result+"\n-------------------\n"+data.Stats.replace(/, /g, "\n"));
-        } else {
-            let errors = grep_error(data.Errors);
-
-            send.lia("log",
-                     data.Errors+"\n-------------------\n"+data.Stats.replace(/, /g, "\n"),
-                     [errors], false);
-
-            send.lia("eval", "LIA: stop");
-        }
-    }).fail(function(data, err) {
-        send.lia("log", err, [], false);
-        send.lia("eval", "LIA: stop");
-    });
-
-"LIA: wait"
-</script>
-@end
-
-@run: @eval(6, ,"-Wall -std=gnu99 -O2 -o a.out source_file.c")
-
-@run_stdin: @eval(6,`@input(1)`,"-Wall -std=gnu99 -O2 -o a.out source_file.c")
+@run_stdin: @Rextester.C(false,`@input(1)`)
 
 -->
-
-
 
 
 # C-Programmierung
