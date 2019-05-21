@@ -1,13 +1,13 @@
 <!--
 author:   André Dietrich
 
-version:  1.0.0
+version:  1.0.1
 
 language: de
 
 narrator: Deutsch Female
 
-import: https://raw.githubusercontent.com/liaScript/rextester_template/master/README.md
+import: https://raw.githubusercontent.com/liaTemplates/rextester/master/README.md
 
 @run: @Rextester.C
 
