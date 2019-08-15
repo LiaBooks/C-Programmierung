@@ -1,7 +1,16 @@
 <!--
 author:   André Dietrich
 
-version:  1.0.1
+email:    LiaScript@web.de
+
+version:  1.0.2
+
+logo:     pic/logo.jpg
+
+comment:  Dieses Buch hat sich zum Ziel gesetzt, den Anwendern eine Einführung
+          in C zu bieten, die noch keine oder eine geringe Programmiererfahrung
+          haben. Es werden lediglich die grundlegenden Kenntnisse im Umgang mit
+          dem Betriebssystem gefordert.
 
 language: de
 
