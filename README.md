@@ -3,7 +3,7 @@ author:   André Dietrich
 
 email:    LiaScript@web.de
 
-version:  1.0.2
+version:  1.0.3
 
 logo:     pic/logo.jpg
 
@@ -16,11 +16,13 @@ language: de
 
 narrator: Deutsch Female
 
+mode:     Textbook
+
 import: https://raw.githubusercontent.com/liaTemplates/rextester/master/README.md
 
-@run: @Rextester.C
+@run: @Rextester.C_clang
 
-@run_stdin: @Rextester.C(false,`@input(1)`)
+@run_stdin: @Rextester.C_clang(false,`@input(1)`)
 
 -->
 
@@ -1578,7 +1580,7 @@ Wenn das Programm übersetzt und ausgeführt wird, erhalten wir die folgende
 Ausgabe:
 
 ```
-Zahl 67:+67  
+Zahl 67:+67
 Zahl 67: 67
 Zahl 67:0x43
 Zahl 0:0
@@ -4230,7 +4232,7 @@ int main()
   int * i = &x;
   printf("Speicheradresse %p enthält %i\n", (void * )i, * i);
   i++; // nächste Adresse lesen, äquivalent zu: i = (void * )i + sizeof(* i);
-  printf("Speicheradresse %p enthält %i\n", (void * )i, * i);  
+  printf("Speicheradresse %p enthält %i\n", (void * )i, * i);
   return 0;
 }
 ```
@@ -4766,18 +4768,18 @@ int Ary[2][3][3][5];                               4D
 |   |                  --------->                ||  | |                  --------->                | |
 |   |    ______________________________________  ||  | |    ______________________________________  | |
 |   | 2D|      ||      ||      ||      ||      | ||  | | 2D|      ||      ||      ||      ||      | | |
-|   |  ||2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | ||  | |  ||2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | | |  
+|   |  ||2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | ||  | |  ||2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | | |
 |   |  ||______||______||______||______||______| ||  | |  ||______||______||______||______||______| | |
 |   |  | ______________________________________  ||  | |  | ______________________________________  | |
 |   |  V|      ||      ||      ||      ||      | ||  | |  V|      ||      ||      ||      ||      | | |
-|   |   |2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | ||  | |   |2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | | |   
+|   |   |2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | ||  | |   |2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | | |
 |   |   |______||______||______||______||______| ||  | |   |______||______||______||______||______| | |
 |   |    ______________________________________  ||  | |    ______________________________________  | |
 |   |   |      ||      ||      ||      ||      | ||  | |   |      ||      ||      ||      ||      | | |
-|   |   |2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | ||  | |   |2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | | |   
+|   |   |2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | ||  | |   |2D|1D ||2D|1D ||2D|1D ||2D|1D ||2D|1D | | |
 |   |   |______||______||______||______||______| ||  | |   |______||______||______||______||______| | |
 |   |____________________________________________||  | |____________________________________________| |
-|_________________________________________________|  |________________________________________________|   
+|_________________________________________________|  |________________________________________________|
 
 ````
 
@@ -5514,7 +5516,7 @@ int main( void )
 
     ptr--;
     printf( "a) Nach der Subtraktion enthält die Variable den Wert: %d \n", * ptr );
-    //    
+    //
     --ptr;
     printf( "b) Nach der Subtraktion enthält die Variable den Wert: %d \n", * ptr );
     //
