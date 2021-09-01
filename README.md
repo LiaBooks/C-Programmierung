@@ -40,12 +40,13 @@ können im Browser ausgeführt und verändert werden. Siehe hier:
 
 https://liascript.github.io/course/?https://raw.githubusercontent.com/andre-dietrich/C-Programmierung/master/README.md
 
-Um die Beispielprogramme in diesem Buch ausführbar zu gestalten, wird auf die
-kostenlose und nicht kommerzielle API von https://rextester.com zurückgegriffen.
+> Um die Beispielprogramme in diesem Buch ausführbar zu gestalten, wird auf die
+> kostenlose und nicht kommerzielle API von
+> [CodeRunner](https://github.com/liascript/coderunner) zurückgegriffen. Dieser
+> wird unter einer kostenlosen Heroku-Instanz gehostet, sodass das aufwecken des
+> Servers manchmal bis zu 30 Sekunden in Anspruch nehmen kann. Dann sollte es
+> flüssig laufen ;-)
 
-Wenn jemand dieses Projekt gut findet, dann kann er hier dafür spenden:
-
-https://rextester.com/main
 
 ## Vorwort
 
