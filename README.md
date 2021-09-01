@@ -3,7 +3,7 @@ author:   André Dietrich
 
 email:    LiaScript@web.de
 
-version:  1.0.3
+version:  2.0.0
 
 logo:     pic/logo.jpg
 
@@ -18,11 +18,9 @@ narrator: Deutsch Female
 
 mode:     Textbook
 
-import: https://raw.githubusercontent.com/liaTemplates/rextester/master/README.md
+import: https://raw.githubusercontent.com/liascript/CodeRunner/master/README.md
 
-@run: @Rextester.C_clang
-
-@run_stdin: @Rextester.C_clang(false,`@input(1)`)
+@run: @LIA.eval(`["main.c"]`, `gcc -Wall main.c -o a.out`, `./a.out`)
 
 -->
 
@@ -618,12 +616,17 @@ int main(void)
   return 0;
 }
 ```
-``` bash stdin
+``` bash @output
+Bitte Länge des Quaders eingeben:
 2
+Bitte Breite des Quaders eingeben:
 3
+Bitte Höhe des Quaders eingeben:
 4
+Quaderoberfläche:
+52
 ```
-@run_stdin
+@run
 
 * Bevor eine Variable in C benutzt werden kann, muss sie definiert werden (Zeile
   5). Das bedeutet, Bezeichner (Name der Variable) und (Daten-)Typ (hier `int`)
@@ -1196,10 +1199,12 @@ int main()
   return 0;
 }
 ```
-``` bash stdin
+``` bash @output
+Bitte geben Sie den Durchmesser ein:
 12.34
+Umfang des Kreises: 38.767221
 ```
-@run_stdin
+@run
 
 In Zeile 5 wird die Konstante pi deklariert. Ihr muss sofort ein Wert zugewiesen
 werden, ansonsten gibt der Compiler eine Fehlermeldung aus.
@@ -2541,10 +2546,13 @@ int main(void)
   return 0;
 }
 ```
-``` bash stdin
+``` bash @output
+Bitte eine Zahl >5 eingeben:
 666
+Die Zahl ist größer als 5
+Tschüß! Bis zum nächsten Mal
 ```
-@run_stdin
+@run
 
 Wir nehmen zunächst einmal an, dass der Benutzer die Zahl 7 eingibt. In diesem
 Fall ist der Ausdruck `zahl > 5` true (wahr) und liefert eine 1 zurück. Da dies
@@ -2583,10 +2591,12 @@ int main(void)
   return 0;
 }
 ```
-``` bash stdin
-666
+``` bash @output
+Bitte geben Sie eine Zahl ein:
+111
+Positive Zahl
 ```
-@run_stdin
+@run
 
 Nehmen wir an, dass der Benutzer die Zahl -5 eingibt. Der Ausdruck `zahl > 0`
 ist in diesem Fall falsch, weshalb der Ausdruck ein false liefert (was einer 0
@@ -2634,10 +2644,12 @@ int main(void)
   return 0;
 }
 ```
-``` bash stdin
+``` bash @output
+Bitte geben Sie eine Zahl ein:
 -66
+Negative Zahl
 ```
-@run_stdin
+@run
 
 Versehentliche Fehler wie
 
@@ -2790,15 +2802,30 @@ int main(void)
    return 0;
 }
 ```
-``` bash stdin
+``` bash @output
+Mini-Taschenrechner
+-----------------
+
+
+Bitte geben Sie die erste Zahl ein:
 3
+Bitte geben Sie die zweite Zahl ein:
 4
+
+Zahl (a) addieren, (s) subtrahieren, (d) dividieren oder (m) multiplizieren?
+Zum Beenden wählen Sie (b)
 A
+Ergebnis: 7.000000
+Bitte geben Sie die erste Zahl ein:
 3
+Bitte geben Sie die zweite Zahl ein:
 4
+
+Zahl (a) addieren, (s) subtrahieren, (d) dividieren oder (m) multiplizieren?
+Zum Beenden wählen Sie (b)
 b
 ```
-@run_stdin
+@run
 
 Mit der `do-while`-Schleife wollen wir uns erst später beschäftigen. Nur so
 viel: Sie dient dazu, dass der in den Blockklammern eingeschlossene Teil nur
@@ -3110,13 +3137,18 @@ int main(void)
  return 0;
 }
 ```
-``` bash stdin
+``` bash @output
+Bitte Zahl zum Addieren eingeben (0 zum Beenden):
 12.12
+Bitte Zahl zum Addieren eingeben (0 zum Beenden):
 3
+Bitte Zahl zum Addieren eingeben (0 zum Beenden):
 -5
+Bitte Zahl zum Addieren eingeben (0 zum Beenden):
 0
+Das Ergebnis ist 10.120000
 ```
-@run_stdin
+@run
 
 Die Überprüfung, ob die Schleife fortgesetzt werden soll, findet in Zeile 14
 statt. Mit do in Zeile 8 wird die Schleife begonnen, eine Prüfung findet dort
@@ -3191,12 +3223,21 @@ int main(void) {
     return 0;
 }
 ```
-``` bash stdin
+``` bash @output
+Geben Sie bitte das Zahlen-Passwort ein:
 1211
+Das Passwort ist nicht korrekt.
+Bitte versuchen Sie es nochmal!
+Geben Sie bitte das Zahlen-Passwort ein:
 000
+Das Passwort ist nicht korrekt.
+Bitte versuchen Sie es nochmal!
+Geben Sie bitte das Zahlen-Passwort ein:
 2323
+Passwort korrekt
+Programm beendet
 ```
-@run_stdin
+@run
 
 
 Wie Sie sehen ist die `while`-Schleife als Endlosschleife konzipiert. Hat man
@@ -3278,110 +3319,36 @@ int main(void)
   return 0;
 }
 ```
-``` bash -stdin
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
+``` bash @output
+Lustiges Zahlenraten
+--------------------
+Erraten Sie die Zufallszahl in moeglichst wenigen Schritten!
+Die Zahl kann zwischen 1 und 100 liegen
+Bitte geben Sie eine Zahl ein:
 50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88
-89
-90
-91
-92
-93
-94
-95
-96
-97
-98
-99
-
+Leider falsch! Die zu erratende Zahl ist kleiner
+Bitte geben Sie eine Zahl ein:
+25
+Leider falsch! Die zu erratende Zahl ist größer
+Bitte geben Sie eine Zahl ein:
+38
+Leider falsch! Die zu erratende Zahl ist kleiner
+Bitte geben Sie eine Zahl ein:
+31
+Leider falsch! Die zu erratende Zahl ist größer
+Bitte geben Sie eine Zahl ein:
+34
+Leider falsch! Die zu erratende Zahl ist kleiner
+Bitte geben Sie eine Zahl ein:
+32
+Leider falsch! Die zu erratende Zahl ist größer
+Bitte geben Sie eine Zahl ein:
+33
+Glückwunsch! Sie haben die Zahl in 7 Schritten erraten.
+Noch ein Spiel? (J/j für weiteres Spiel)
+n
 ```
-@run_stdin
+@run
 
 Wie Sie sehen, ist die innere `while`-Schleife als Endlosschleife konzipiert.
 Hat der Spieler die richtige Zahl erraten, so wird der `else`-Block ausgeführt.
@@ -3587,11 +3554,16 @@ int main()
 	return 0;
 }
 ```
-``` bash stdin
+``` bash @output
+Programm zur Berechnung einer Zylinderoberfläche
+
+Höhe des Zylinders:
 12
+Radius des Zylinders:
 44
+Oberfläche: 15481.769531
 ```
-@run_stdin
+@run
 
 * In Zeile 3 beginnt die Funktionsdefinition. Das `float`  ganz am Anfang der
   Funktion, der sogenannte Funktionstyp, sagt dem Compiler, dass ein Wert mit
@@ -3740,11 +3712,16 @@ float zylinder_oberflaeche(float h, float r)
 	return o;
 }
 ```
-``` bash stdin
+``` bash @output
+Programm zur Berechnung einer Zylinderoberfläche
+
+Höhe des Zylinders:
 3.1
-4.2
+Radius des Zylinders:
+4.1
+Oberfläche: 185.479630
 ```
-@run_stdin
+@run
 
 Der Prototyp wird in Zeile 5 deklariert, damit die Funktion in Zeile 21
 verwendet werden kann. An dieser Stelle kann der Compiler auch prüfen, ob der
@@ -4622,16 +4599,25 @@ int main( void )
     return 0;
 }
 ```
-``` bash stdin
+``` bash @output
 10
+Bitte die Umsaetze der letzten Woche eingeben:
 11
+Bitte die Umsaetze der letzten Woche eingeben:
 33
+Bitte die Umsaetze der letzten Woche eingeben:
 123
+Bitte die Umsaetze der letzten Woche eingeben:
 123
+Bitte die Umsaetze der letzten Woche eingeben:
 12
+Bitte die Umsaetze der letzten Woche eingeben:
 12
+Gesamter Wochengewinn: 324.000000
+Hoechster Umsatz: 123.000000
+Niedrigster Umsatz: 10.000000
 ```
-@run_stdin
+@run
 
 ACHTUNG: Bei einer Zuweisung von Arrays wird nicht geprüft, ob eine
 Feldüberschreitung vorliegt. So führt beispielsweise
@@ -4877,14 +4863,20 @@ int main( void )
     return 0;
 }
 ```
-``` bash stdin
-
-
-
-
-
+``` bash @output
+Inhalt von Z-Ary[0][0][0] ist: 1305088153
+Inhalt von Z-Ary[0][0][1] ist: 1240070276
+Inhalt von Z-Ary[0][0][2] ist: 199493509
+Inhalt von Z-Ary[0][0][3] ist: 2032196552
+Inhalt von Z-Ary[0][0][4] ist: 142464088
+Inhalt von Z-Ary[0][0][5] ist: 625351350
+Inhalt von Z-Ary[0][0][6] ist: 392877149
+Inhalt von Z-Ary[0][0][7] ist: 1035510165
+Inhalt von Z-Ary[0][0][8] ist: 675295178
+Inhalt von Z-Ary[0][0][9] ist: 666622416
+Weiter mit Eingabetaste && Verlassen mit STRG-C.
 ```
-@run_stdin
+@run
 
 ### Arrays initialisieren
 
@@ -5582,10 +5574,14 @@ int main(void)
     return 0;
 }
 ```
-``` bash stdin
+``` bash @output
 Dies ist ein Beispielsatz.
+Original Satz: Dies ist ein Beispielsatz.
+
+Verschluesselter Satz: De s i esilazisitenBipest.
+Der String ist 26 Zeichen lang
 ```
-@run_stdin
+@run
 
 Sehen wir uns dieses Beispiel etwas genauer an:
 
@@ -6064,10 +6060,12 @@ int main()
 
 }
 ```
-``` bash stdin
+``` bash @output
+Eingabe machen:
+Das ist ein test
 Das ist ein test
 ```
-@run_stdin
+@run
 
 
 Beispiel 2:
@@ -7897,10 +7895,12 @@ int main()
   return 0;
 }
 ```
-```bash stdin
+```bash @output
+Ganze Zahl eingeben:
 12
+Fakultaet der Zahl: 479001600
 ```
-@run_stdin
+@run
 
 ### Beseitigung der Rekursion
 
@@ -7968,11 +7968,15 @@ int main(void)
   }
 }
 ```
-``` bash stdin
+``` bash @output
+Gib x ein:
 3
+
+Gib n ein:
 4
+Funktionswert: 81
 ```
-@run_stdin
+@run
 
 Multiplizieren von zwei Zahlen als Ausschnitt:
 
